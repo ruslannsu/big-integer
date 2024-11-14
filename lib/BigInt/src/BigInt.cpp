@@ -1,7 +1,3 @@
-//
-// Created by Руслан on 01.11.2024.
-//
-
 #include "BigInt.h"
 
 BigInt::BigInt():base(UINT32_MAX), null_count(0), max_digit(::max_digit), num(){}
