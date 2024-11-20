@@ -290,6 +290,21 @@ bool BigInt::operator<=(const BigInt& other) const
     }
 }
 
+bool BigInt::operator<(const BigInt& other) const
+{
+    return !(*this >= other);
+}
+
+bool BigInt::operator>(const BigInt& other) const
+{
+    return !(*this <= other);
+}
+
+bool BigInt::operator!=(const BigInt& other) const
+{
+    return !(*this == other);
+}
+
 bool BigInt::operator==(const BigInt&other) const
 {
     if (num.empty() || other.num.empty())
@@ -312,6 +327,7 @@ bool BigInt::operator==(const BigInt&other) const
     }
     return true;
 }
+
 
 
 std::ostream& operator<<(std::ostream& os, const BigInt& Bg)
