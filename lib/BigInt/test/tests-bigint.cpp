@@ -3,20 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
-/*
-void PrintTo(const BigInt& bigint, std::ostream* os)
-{
-    std::ostringstream out;
-    auto it = bigint.num.rbegin();
-    out << *it;
-    ++it;
-    for (; it != bigint.num.rend(); ++it)
-    {
-        out << std::setw(9) << std::setfill('0') << *it;
-    }
-    *os << out.str();
-}
-*/
+
 
 
 TEST(BigIntIncrementDecrementTest, IncrementOperators)
@@ -62,7 +49,6 @@ TEST(BigIntComparisonTest, GreaterThanOrEqual_PositiveCases)
 {
     BigInt a("12345678901234567890");
     BigInt b("12345678901234567890");
-
     EXPECT_TRUE(a >= b);
 
     BigInt c("12345678901234567891");
@@ -76,7 +62,6 @@ TEST(BigIntComparisonTest, GreaterThanOrEqual_NegativeCases)
 {
     BigInt a("12345678901234567890");
     BigInt b("12345678901234567891");
-
     EXPECT_FALSE(a >= b);
 }
 
@@ -84,7 +69,6 @@ TEST(BigIntComparisonTest, GreaterThanOrEqual_DifferentLengths)
 {
     BigInt a("1000000000000000000000000000000");
     BigInt b("999999999999999999999");
-
     EXPECT_TRUE(a >= b);
 
     BigInt c("1000000000000000000000000000001");
@@ -110,7 +94,6 @@ TEST(BigIntComparisonTest, LessThanOrEqual_NegativeCases)
 {
     BigInt a("12345678901234567890");
     BigInt b("12345678901234567891");
-
     EXPECT_TRUE(a <= b);
 }
 
@@ -153,10 +136,6 @@ TEST(BigIntArithmeticTest, SubtractionAssignment)
     BigInt t8(BigInt("1"));
     t7-=t8;
     EXPECT_EQ(t7, BigInt("99999999999999999999999999999999999"));
-
-
-
-
     BigInt e("1001");
     BigInt f("2");
     e -= f;
