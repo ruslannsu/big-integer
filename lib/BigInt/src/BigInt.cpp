@@ -1,15 +1,15 @@
 #include "BigInt.h"
 
-BigInt::BigInt():base(UINT32_MAX), null_count(0), max_digit(::max_digit), num(){}
+BigInt::BigInt():base(UINT32_MAX), max_digit(::max_digit), num(){}
 
 BigInt::~BigInt(){}
 
-BigInt::BigInt(int input):base(UINT32_MAX), null_count(0)
+BigInt::BigInt(int input):base(UINT32_MAX), max_digit(::max_digit), num()
 {
     num.push_back(input);
 }
 
-BigInt::BigInt(std::string str):base(UINT32_MAX), null_count(0), max_digit(::max_digit), num()
+BigInt::BigInt(std::string str):base(UINT32_MAX), max_digit(::max_digit), num()
 {
     if (str.empty() || (str[0] == '-' && str.size() == 1))
     {
@@ -44,7 +44,6 @@ BigInt::BigInt(std::string str):base(UINT32_MAX), null_count(0), max_digit(::max
     }
 }
 
-BigInt::BigInt(const BigInt &other):base(other.base), null_count(0), num(other.num){}
 
 BigInt& BigInt::operator=(const BigInt& other)
 {
@@ -53,7 +52,6 @@ BigInt& BigInt::operator=(const BigInt& other)
         return *this;
     }
     base = other.base;
-    null_count = other.null_count;
     num = other.num;
     return *this;
 }
@@ -125,22 +123,21 @@ BigInt& BigInt::operator+=(const BigInt& other)
     {
         throw std::invalid_argument("Cannot add an uninitialized BigInt");
     }
+    if (num.size() < other.num.size())
+    {
+        num.resize(other.num.size());
+    }
     size_t t_size = num.size();
     for (size_t i = 0; i != other.num.size(); ++i)
     {
         if ((num.at(i) + other.num.at(i)) > max_digit)
         {
             num.at(i)+=other.num.at(i);
-            for (size_t j = i; j != t_size; ++j)
+            for (size_t j = i; j != t_size - 1; ++j)
             {
                 if (num.at(j) > max_digit)
                 {
                     num.at(j)-=max_digit + 1;
-                    if (j == t_size)
-                    {
-                        num.push_back(1);
-                        return *this;
-                    }
                     ++num.at(j + 1);
                 }
                 else
@@ -160,7 +157,7 @@ BigInt& BigInt::operator+=(const BigInt& other)
 BigInt operator+(const BigInt& a, const BigInt& b)
 {
     BigInt res = a;
-    return res+=a;
+    return res+=b;;
 }
 
 
@@ -169,6 +166,10 @@ BigInt& BigInt::operator-=(const BigInt& other)
     if (other.num.empty())
     {
         throw std::invalid_argument("Cannot subtract an uninitialized BigInt");
+    }
+    if (*this < other)
+    {
+        throw std::invalid_argument("Only +nums");
     }
 
     for (size_t i = 0; i != other.num.size();++i)
@@ -198,20 +199,14 @@ BigInt& BigInt::operator-=(const BigInt& other)
     return *this;
 }
 
-
 BigInt operator*(const BigInt&a, const BigInt&b)
 {
+
     if ((a.num.empty()) || (b.num.empty()))
     {
         throw std::invalid_argument("Cannot multiply by an uninitialized BigInt");
     }
-
     BigInt mul;
-    if (a.num.at(0) * b.num.at(0) <= max_digit)
-    {
-        mul = a.num.at(0) * b.num.at(0);
-        return mul;
-    }
     mul.num.resize(a.num.size() + b.num.size(), 0);
     BigInt buff;
     for (size_t i = 0; i != b.num.size(); ++i)
@@ -233,8 +228,6 @@ BigInt operator*(const BigInt&a, const BigInt&b)
     return mul;
 }
 
-
-
 bool BigInt::operator>=(const BigInt& other) const
 {
     if (num.empty() || other.num.empty())
@@ -245,6 +238,10 @@ bool BigInt::operator>=(const BigInt& other) const
     {
         for (size_t i = num.size() - 1; i != -1; --i)
         {
+            if (num.at(i) > other.num.at(i))
+            {
+                return true;
+            }
             if (num.at(i) < other.num.at(i))
             {
                 return false;
@@ -273,6 +270,10 @@ bool BigInt::operator<=(const BigInt& other) const
     {
         for (size_t i = num.size() - 1; i != -1; --i)
         {
+            if (num.at(i) < other.num.at(i))
+            {
+                return false;
+            }
             if (num.at(i) > other.num.at(i))
             {
                 return false;
@@ -328,11 +329,23 @@ bool BigInt::operator==(const BigInt&other) const
     return true;
 }
 
-
+void BigInt::destroy_nulls()
+{
+    for (size_t i = num.size() - 1; i != 0; --i)
+    {
+        if (num.at(i) == 0)
+        {
+            num.pop_back();
+        }
+        else
+        {
+            break;
+        }
+    }
+}
 
 std::ostream& operator<<(std::ostream& os, const BigInt& Bg)
 {
-
     if ((Bg.num.at(0) == 0) && ((Bg.num.size() == 1)))
     {
         os << 0 << std::endl;
@@ -367,3 +380,56 @@ std::ostream& operator<<(std::ostream& os, const BigInt& Bg)
     }
     return os;
 }
+
+void BigInt::shift_right()
+{
+    if (num.size() == 0)
+    {
+        num.push_back(0);
+        return;
+    }
+    num.push_back(num.at(num.size() - 1));
+    for (size_t i = num.size() - 2; i != 0; i--)
+    {
+        num.at(i) = num.at(i - 1);
+    }
+    num.at(0) = 0;
+}
+
+BigInt& BigInt::operator/=(const BigInt& other)
+{
+    BigInt current, res;
+    res.num.resize(this->num.size(), 0);
+    for (size_t i = num.size() - 1; i != -1; --i)
+    {
+        current.shift_right();
+        current.num.at(0) = num.at(i);
+        destroy_nulls();
+        int x = 0, l = 0, r = max_digit + 1;
+        while(l <= r)
+        {
+            size_t mid = (r + l) / 2;
+            BigInt temp;
+            temp = BigInt(std::to_string(mid)) * other;
+            temp.destroy_nulls();
+            current.destroy_nulls();
+            if (current >= temp)
+            {
+                x = mid;
+                l = mid + 1;
+            }
+            else
+            {
+                r = mid - 1;
+            }
+        }
+        res.num.at(i) = x;
+        BigInt del = other * BigInt(std::to_string(x));
+        del.destroy_nulls();
+        current-=del;
+    }
+    *this = res;
+    std::cout << res << std::endl;
+    return *this;
+}
+
