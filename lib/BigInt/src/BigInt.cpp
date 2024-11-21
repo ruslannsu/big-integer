@@ -199,34 +199,51 @@ BigInt& BigInt::operator-=(const BigInt& other)
     return *this;
 }
 
-BigInt operator*(const BigInt&a, const BigInt&b)
+BigInt operator-(const BigInt& a, const BigInt&b)
 {
+    BigInt res = a;
+    res-=b;
+    return res;
+}
 
-    if ((a.num.empty()) || (b.num.empty()))
+
+
+BigInt& BigInt::operator*=(const BigInt& other)
+{
+    if ((num.empty()) || (other.num.empty()))
     {
         throw std::invalid_argument("Cannot multiply by an uninitialized BigInt");
     }
     BigInt mul;
-    mul.num.resize(a.num.size() + b.num.size(), 0);
+    mul.num.resize(num.size() + other.num.size(), 0);
     BigInt buff;
-    for (size_t i = 0; i != b.num.size(); ++i)
+    for (size_t i = 0; i != other.num.size(); ++i)
     {
-        for (size_t j = 0; j != a.num.size(); ++j)
+        for (size_t j = 0; j != num.size(); ++j)
         {
-            if ((a.num.at(j) * b.num.at(i) + mul.num.at(i + j)) > max_digit)
+            if ((num.at(j) * other.num.at(i) + mul.num.at(i + j)) > max_digit)
             {
-                mul.num.at(i + j) += (a.num.at(j) * b.num.at(i));
+                mul.num.at(i + j) += (num.at(j) * other.num.at(i));
                 mul.num.at(i + j + 1) += mul.num.at(i + j) / (max_digit + 1);
                 mul.num.at(i + j) = mul.num.at(i + j) % (max_digit + 1);
             }
             else
             {
-                mul.num.at(i + j) += (a.num.at(j) * b.num.at(i));
+                mul.num.at(i + j) += (num.at(j) * other.num.at(i));
             }
         }
     }
-    return mul;
+    *this = mul;
+    return *this;
 }
+
+BigInt operator*(const BigInt&a, const BigInt&b)
+{
+    BigInt res = a;
+    res*=b;
+    return res;
+}
+
 
 bool BigInt::operator>=(const BigInt& other) const
 {
@@ -272,7 +289,7 @@ bool BigInt::operator<=(const BigInt& other) const
         {
             if (num.at(i) < other.num.at(i))
             {
-                return false;
+                return true;
             }
             if (num.at(i) > other.num.at(i))
             {
@@ -429,7 +446,60 @@ BigInt& BigInt::operator/=(const BigInt& other)
         current-=del;
     }
     *this = res;
-    std::cout << res << std::endl;
     return *this;
 }
+
+BigInt operator/(const BigInt&a, const BigInt&b)
+{
+    BigInt res = a;
+    return res/=b;
+}
+
+BigInt& BigInt::operator%=(const BigInt&other)
+{
+    BigInt temp = (*this / other) * other;
+    temp.destroy_nulls();
+    *this -= temp;
+    return *this;
+}
+
+BigInt operator%(const BigInt&a, const BigInt&b)
+{
+    BigInt res = a;
+    res %= b;
+    return res;
+}
+
+bool BigInt::is_odd()
+{
+    return num.at(0) & 1;
+}
+
+
+BigInt& BigInt::operator^=(const BigInt& other)
+{
+    BigInt temp_other = other;
+    BigInt res("1");
+    while (temp_other != BigInt(0))
+    {
+        if (temp_other.is_odd())
+        {
+            res *= *this;
+            res.destroy_nulls();
+        }
+        *this *= *this;
+        this->destroy_nulls();
+        temp_other /= 2;
+    }
+    *this = res;
+    return *this;
+}
+
+BigInt operator^(const BigInt &a, const BigInt &b)
+{
+    BigInt res = a;
+    res^=b;
+    return res;
+}
+
 

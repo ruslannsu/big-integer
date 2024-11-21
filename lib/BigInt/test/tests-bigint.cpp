@@ -196,7 +196,38 @@ TEST(BigIntTest, AdditionAssignment)
     l+=k;
     EXPECT_EQ(l, BigInt("1000000000011905340985439058349058346748"));
 
+}
 
+TEST(BigIntTest, DivAssignment)
+{
+    BigInt a = BigInt("55555555555555555555555");
+    BigInt b = BigInt("3588934543");
+    a/=b;
+    EXPECT_EQ(a, BigInt("15479679244614"));
+
+    BigInt t1 = BigInt("5555555555555555555555568975489654");
+    BigInt t2 = BigInt("35889345435456546459543985903");
+    t1/=t2;
+    EXPECT_EQ(t1, BigInt("154796"));
+    BigInt t3 = BigInt("5555654984920904238769854398943895568975489654");
+    BigInt t4 = BigInt("3588934543545893489053565465903");
+    t3/=t4;
+    EXPECT_EQ(t3, BigInt("1547995628650244"));
+
+
+}
+
+TEST(BigIntTest, ModAssignment)
+{
+    BigInt a = BigInt("5555654984920904238769854398943895568975489654");
+    BigInt b = BigInt("3588934543545893489053565465903");
+    a %= b;
+    EXPECT_EQ(a, BigInt("2347027813234018121874080859322"));
+    BigInt t1 = BigInt("555565498492090423876489654");
+    BigInt t2 = BigInt("1");
+    BigInt c;
+    t1 %= t2;
+    EXPECT_EQ(t1, BigInt("0"));
 }
 
 
