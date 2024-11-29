@@ -2,9 +2,10 @@
 #include <iostream>
 #include <vector>
 #include <stdint.h>
+#include <utility>
 
-inline int range = 9;
-inline int max_digit = 999999999;
+constexpr int range = 9;
+constexpr int max_digit = 999999999;
 
 class BigInt
 {
@@ -40,11 +41,15 @@ public:
     void destroy_nulls();
     void shift_right();
     bool is_odd();
+    friend std::pair<BigInt, BigInt> divmod(BigInt& a, BigInt &b);
+
+
 private:
     uint32_t base;
     uint32_t max_digit;
     std::vector<uint64_t> num;
 };
+
 
 
 

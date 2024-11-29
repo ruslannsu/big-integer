@@ -1,5 +1,6 @@
 #include "BigInt.h"
 
+
 BigInt::BigInt():base(UINT32_MAX), max_digit(::max_digit), num(){}
 
 BigInt::~BigInt(){}
@@ -11,18 +12,18 @@ BigInt::BigInt(int input):base(UINT32_MAX), max_digit(::max_digit), num()
 
 BigInt::BigInt(std::string str):base(UINT32_MAX), max_digit(::max_digit), num()
 {
-    if (str.empty() || (str[0] == '-' && str.size() == 1))
+    if (str.empty() || (str.at(0) == '-' && str.size() == 1))
     {
         throw std::invalid_argument("Invalid input string for BigInt");
     }
-    if (str[0] == '-')
+    if (str.at(0) == '-')
     {
         throw std::invalid_argument("BigInt only supports non-negative numbers");
     }
     size_t index = str.size() - 1;
     while(true)
     {
-        if (((str.size() - index - 1)% range) == 0)
+        if (((str.size() - index - 1) % range) == 0)
         {
             if (str.substr(index + 1, range) != "")
             {
@@ -132,7 +133,7 @@ BigInt& BigInt::operator+=(const BigInt& other)
     {
         if ((num.at(i) + other.num.at(i)) > max_digit)
         {
-            num.at(i)+=other.num.at(i);
+            num.at(i) += other.num.at(i);
             for (size_t j = i; j != t_size - 1; ++j)
             {
                 if (num.at(j) > max_digit)
@@ -449,6 +450,43 @@ BigInt& BigInt::operator/=(const BigInt& other)
     return *this;
 }
 
+std::pair<BigInt, BigInt> divmod(BigInt& a, BigInt& b)
+{
+    BigInt current;
+    BigInt res;
+    res.num.resize(a.num.size(), 0);
+    for (size_t i = a.num.size() - 1; i != -1; --i)
+    {
+        current.shift_right();
+        current.num.at(0) = a.num.at(i);
+        a.destroy_nulls();
+        int x = 0, l = 0, r = max_digit + 1;
+        while(l <= r)
+        {
+            size_t mid = (r + l) / 2;
+            BigInt temp;
+            temp = BigInt(std::to_string(mid)) * b;
+            temp.destroy_nulls();
+            current.destroy_nulls();
+            if (current >= temp)
+            {
+                x = mid;
+                l = mid + 1;
+            }
+            else
+            {
+                r = mid - 1;
+            }
+        }
+        res.num.at(i) = x;
+        BigInt del = b * BigInt(std::to_string(x));
+        del.destroy_nulls();
+        current-=del;
+    }
+    return std::make_pair(res, current);
+}
+
+
 BigInt operator/(const BigInt&a, const BigInt&b)
 {
     BigInt res = a;
@@ -470,16 +508,18 @@ BigInt operator%(const BigInt&a, const BigInt&b)
     return res;
 }
 
+
 bool BigInt::is_odd()
 {
     return num.at(0) & 1;
 }
 
 
+
 BigInt& BigInt::operator^=(const BigInt& other)
 {
     BigInt temp_other = other;
-    BigInt res("1");
+    BigInt res(1);
     while (temp_other != BigInt(0))
     {
         if (temp_other.is_odd())
